@@ -83,6 +83,7 @@ where
     }
 
     pub(crate) async fn get(&self) -> Result<PooledConnection<'_, M>, RunError<M::Error>> {
+        println!("getcalled");
         self.make_pooled(|this, conn| PooledConnection::new(this, conn))
             .await
     }
@@ -106,6 +107,7 @@ where
     where
         F: Fn(&'a Self, Conn<M::Connection>) -> PooledConnection<'b, M>,
     {
+        println!("testerr 0")
         loop {
             let mut conn = {
                 let mut locked = self.inner.internals.lock();
@@ -117,10 +119,12 @@ where
                     None => break,
                 }
             };
-
+            println!("testerr 1")
             if !self.inner.statics.test_on_check_out {
+                println!("testerr in")
                 return Ok(conn);
             }
+            println!("testerr out")
 
             match self.inner.manager.is_valid(&mut conn).await {
                 Ok(()) => return Ok(conn),
